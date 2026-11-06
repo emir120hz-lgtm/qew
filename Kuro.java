@@ -455,7 +455,7 @@ public class Kuro {
         });
     }
 
-    // ---------- yenilenen modern giris (login) ekrani ----------
+    // ---------- login ----------
     JComponent buildLogin() {
         JPanel center = new JPanel(new GridBagLayout()); center.setOpaque(false);
         JPanel card = new JPanel() {
@@ -472,7 +472,6 @@ public class Kuro {
         card.setBorder(new EmptyBorder(32, 40, 32, 40));
         card.setPreferredSize(new Dimension(420, 520));
 
-        // Logo ve Hos Geldin Basligi
         JLabel logo = lbl("KURO", 42, true, ACC); logo.setAlignmentX(0.5f);
         JLabel sub = lbl("Kuro Launcher'a Hos Geldin", 14, true, FG); sub.setAlignmentX(0.5f);
         JLabel desc = lbl("Oynamak icin bir hesap sec veya yeni olustur", 12, false, MUTED); desc.setAlignmentX(0.5f);
@@ -484,7 +483,6 @@ public class Kuro {
         card.add(desc); 
         card.add(Box.createVerticalStrut(20));
 
-        // Kayitli Hesaplar listesi
         JPanel accs = vbox(); accs.setAlignmentX(0.5f);
         List<String> savedAccs = accounts();
         if (!savedAccs.isEmpty()) {
@@ -509,7 +507,6 @@ public class Kuro {
             card.add(Box.createVerticalStrut(14));
         }
 
-        // Yeni hesap olusturma alani
         KField name = fixed(new KField("Kullanici Adi (Ornegin: Steve)"), 340, 44);
         JLabel err = lbl(" ", 12, false, RED); err.setAlignmentX(0.5f);
         Runnable go = () -> {
@@ -766,4 +763,235 @@ public class Kuro {
             SwingUtilities.invokeLater(() -> {
                 verPick.items.clear();
                 verPick.items.addAll(versionUrls.keySet());
-                if (!versionUrls.containsKey(selVer) && !
+                if (!versionUrls.containsKey(selVer) && !verPick.items.isEmpty()) { selVer = verPick.items.get(0); }
+                verPick.text = selVer; verPick.repaint(); updateInfo();
+            });
+        } catch (Exception e) { log("Surum listesi alinamadi: " + e); }
+    }
+
+    // ---------- launch ----------
+    void launch() {
+        SwingUtilities.invokeLater(() -> play.setEnabled(false));
+        try {
+            String mc = selVer;
+            if (mc == null || !versionUrls.containsKey(mc)) throw new Exception("Surum secilmedi");
+            String name = account == null ? "Player" : account;
+            prog(0, 1, "Surum bilgisi indiriliyor...");
+            Map<String, Object> meta = Json.obj(get(versionUrls.get(mc)));
+            Path verDir = ROOT.resolve("versions").resolve(mc);
+            Files.createDirectories(verDir);
+
+            List> libs = new ArrayList<>();
+            for (Object o : Json.arr(meta.get("libraries"))) libs.add(Json.obj(o));
+            String mainClass = (String) meta.get("mainClass");
+            List<String> jvmExtra = new ArrayList<>(), gameExtra = new ArrayList<>();
+            collectArgs(meta, jvmExtra, gameExtra);
+
+            if (selLoader > 0) {
+                String base = selLoader == 1 ? "https://meta.fabricmc.net/v2" : "https://meta.quiltmc.org/v3";
+                log(LOADERS[selLoader] + " profili indiriliyor...");
+                List<Object> loaders = Json.arr(Json.parse(get(base + "/versions/loader/" + mc)));
+                if (loaders.isEmpty()) throw new Exception("Bu surum icin " + LOADERS[selLoader] + " yok");
+                Map<String, Object> pick = Json.obj(loaders.get(0));
+                for (Object o : loaders) { Map<String, Object> l = Json.obj(Json.obj(o).get("loader")); if (Boolean.TRUE.equals(l.get("stable"))) { pick = Json.obj(o); break; } }
+                String lv = (String) Json.obj(pick.get("loader")).get("version");
+                Map<String, Object> fp = Json.obj(get(base + "/versions/loader/" + mc + "/" + lv + "/profile/json"));
+                mainClass = (String) fp.get("mainClass");
+                for (Object o : Json.arr(fp.get("libraries"))) libs.add(0, Json.obj(o));
+                collectArgs(fp, jvmExtra, gameExtra);
+            }
+
+            List<Path> cp = new ArrayList<>();
+            List<String[]> jobs = new ArrayList<>();
+            for (Map<String, Object> lib : libs) {
+                if (!allowed(lib.get("rules"))) continue;
+                Map<String, Object> dl = lib.get("downloads") == null ? null : Json.obj(lib.get("downloads"));
+                String url, rel;
+                if (dl != null && dl.get("artifact") != null) {
+                    Map<String, Object> a = Json.obj(dl.get("artifact"));
+                    url = (String) a.get("url"); rel = (String) a.get("path");
+                } else if (lib.get("url") != null) {
+                    String[] c = ((String) lib.get("name")).split(":");
+                    rel = c[0].replace('.', '/') + "/" + c[1] + "/" + c[2] + "/" + c[1] + "-" + c[2] + ".jar";
+                    url = lib.get("url") + rel;
+                } else continue;
+                Path dst = ROOT.resolve("libraries").resolve(rel);
+                jobs.add(new String[]{url, dst.toString()});
+                cp.add(dst);
+            }
+            Map<String, Object> client = Json.obj(Json.obj(meta.get("downloads")).get("client"));
+            Path clientJar = verDir.resolve(mc + ".jar");
+            jobs.add(new String[]{(String) client.get("url"), clientJar.toString()});
+
+            Map<String, Object> ai = Json.obj(meta.get("assetIndex"));
+            String assetId = (String) ai.get("id");
+            Path idx = ROOT.resolve("assets/indexes").resolve(assetId + ".json");
+            download((String) ai.get("url"), idx);
+            Map<String, Object> objs = Json.obj(Json.obj(Json.parse(Files.readString(idx))).get("objects"));
+            for (Object o : objs.values()) {
+                String h = (String) Json.obj(o).get("hash");
+                jobs.add(new String[]{"https://resources.download.minecraft.net/" + h.substring(0, 2) + "/" + h,
+                        ROOT.resolve("assets/objects").resolve(h.substring(0, 2)).resolve(h).toString()});
+            }
+
+            log("Indiriliyor: " + jobs.size() + " dosya");
+            ExecutorService ex = Executors.newFixedThreadPool(16);
+            AtomicInteger done = new AtomicInteger();
+            List<Future<?>> fs = new ArrayList<>();
+            for (String[] j : jobs) fs.add(ex.submit(() -> {
+                try { download(j[0], Paths.get(j[1])); } catch (Exception e) { log("Hata: " + j[0]); }
+                int d = done.incrementAndGet();
+                if (d % 15 == 0 || d == jobs.size()) prog(d, jobs.size(), "Indiriliyor " + d + " / " + jobs.size());
+            }));
+            for (Future<?> f : fs) f.get();
+            ex.shutdown();
+
+            cp.add(clientJar);
+            StringBuilder cps = new StringBuilder();
+            for (Path p : new LinkedHashSet<>(cp)) cps.append(p).append(File.pathSeparator);
+            Path game = instDir(); Files.createDirectories(game.resolve("mods"));
+
+            Map<String, String> vars = new HashMap<>();
+            vars.put("auth_player_name", name); vars.put("version_name", mc);
+            vars.put("game_directory", game.toString()); vars.put("assets_root", ROOT.resolve("assets").toString());
+            vars.put("assets_index_name", assetId);
+            vars.put("auth_uuid", UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes()).toString().replace("-", ""));
+            vars.put("auth_access_token", "0"); vars.put("clientid", "0"); vars.put("auth_xuid", "0");
+            vars.put("user_type", "legacy"); vars.put("version_type", "Kuro");
+            vars.put("natives_directory", ROOT.resolve("natives").toString());
+            vars.put("launcher_name", "Kuro"); vars.put("launcher_version", "2.0");
+            vars.put("classpath", cps.toString());
+
+            List<String> cmd = new ArrayList<>();
+            cmd.add(Paths.get(System.getProperty("java.home"), "bin", "java").toString());
+            cmd.add("-Xmx" + ci("ram", 4) + "G");
+            for (String s : cs("jvm", "").trim().split("\\s+")) if (!s.isEmpty()) cmd.add(s);
+            for (String s : jvmExtra) cmd.add(sub(s, vars));
+            if (!jvmExtra.contains("-cp")) { cmd.add("-cp"); cmd.add(cps.toString()); }
+            cmd.add(mainClass);
+            for (String s : gameExtra) cmd.add(sub(s, vars));
+
+            prog(1, 1, "Oyun calisiyor");
+            log("Baslatiliyor: " + mc + " (" + LOADERS[selLoader] + ")");
+            Process pr = new ProcessBuilder(cmd).directory(game.toFile()).redirectErrorStream(true).start();
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(pr.getInputStream()))) {
+                String l; while ((l = r.readLine()) != null) log(l);
+            }
+            log("Oyun kapandi (kod " + pr.waitFor() + ")");
+            prog(0, 1, "Hazir");
+        } catch (Exception e) {
+            log("HATA: " + e); prog(0, 1, "Hata olustu, logu kontrol et");
+        } finally {
+            SwingUtilities.invokeLater(() -> play.setEnabled(true));
+        }
+    }
+
+    static String sub(String s, Map<String, String> v) {
+        for (Map.Entry<String, String> e : v.entrySet()) s = s.replace("${" + e.getKey() + "}", e.getValue());
+        return s;
+    }
+
+    void collectArgs(Map<String, Object> meta, List<String> jvm, List<String> game) {
+        if (meta.get("arguments") == null) return;
+        Map<String, Object> a = Json.obj(meta.get("arguments"));
+        for (String k : new String[]{"jvm", "game"}) {
+            List<String> out = k.equals("jvm") ? jvm : game;
+            if (a.get(k) == null) continue;
+            for (Object o : Json.arr(a.get(k))) {
+                if (o instanceof String) { out.add((String) o); continue; }
+                if (k.equals("game")) continue;
+                Map<String, Object> m = Json.obj(o);
+                if (!allowed(m.get("rules"))) continue;
+                Object v = m.get("value");
+                if (v instanceof String) out.add((String) v);
+                else for (Object x : Json.arr(v)) out.add((String) x);
+            }
+        }
+    }
+
+    static boolean allowed(Object rules) {
+        if (rules == null) return true;
+        String sys = System.getProperty("os.arch").toLowerCase();
+        boolean arm = sys.contains("aarch64") || sys.contains("arm"), x64 = sys.contains("amd64") || sys.contains("x86_64");
+        boolean ok = false;
+        for (Object o : Json.arr(rules)) {
+            Map<String, Object> r = Json.obj(o);
+            boolean match = r.get("features") == null;
+            if (r.get("os") != null) {
+                Map<String, Object> os = Json.obj(r.get("os"));
+                if (os.get("name") != null && !os.get("name").equals(OS)) match = false;
+                Object ar = os.get("arch");
+                if ("x86".equals(ar) && (x64 || arm)) match = false;
+                if ("arm64".equals(ar) && !arm) match = false;
+            }
+            if (match) ok = "allow".equals(r.get("action"));
+        }
+        return ok;
+    }
+}
+
+/** Tiny JSON parser/serializer (no external dependencies). */
+class Json {
+    final String s; int i;
+    Json(String s) { this.s = s; }
+    static Object parse(String s) { return new Json(s).val(); }
+    @SuppressWarnings("unchecked") static Map<String, Object> obj(Object o) { return o instanceof String ? (Map<String, Object>) parse((String) o) : (Map<String, Object>) o; }
+    @SuppressWarnings("unchecked") static List<Object> arr(Object o) { return (List<Object>) o; }
+
+    void ws() { while (i < s.length() && Character.isWhitespace(s.charAt(i))) i++; }
+    Object val() {
+        ws();
+        char c = s.charAt(i);
+        if (c == '{') {
+            Map<String, Object> m = new LinkedHashMap<>(); i++; ws();
+            if (s.charAt(i) == '}') { i++; return m; }
+            while (true) { ws(); String k = str(); ws(); i++; m.put(k, val()); ws(); if (s.charAt(i++) == '}') return m; }
+        }
+        if (c == '[') {
+            List<Object> l = new ArrayList<>(); i++; ws();
+            if (s.charAt(i) == ']') { i++; return l; }
+            while (true) { l.add(val()); ws(); if (s.charAt(i++) == ']') return l; }
+        }
+        if (c == '"') return str();
+        if (s.startsWith("true", i)) { i += 4; return true; }
+        if (s.startsWith("false", i)) { i += 5; return false; }
+        if (s.startsWith("null", i)) { i += 4; return null; }
+        int st = i;
+        while (i < s.length() && "+-0123456789.eE".indexOf(s.charAt(i)) >= 0) i++;
+        String n = s.substring(st, i);
+        return n.contains(".") || n.contains("e") || n.contains("E") ? (Object) Double.parseDouble(n) : (Object) Long.parseLong(n);
+    }
+    String str() {
+        StringBuilder b = new StringBuilder(); i++;
+        while (true) {
+            char c = s.charAt(i++);
+            if (c == '"') return b.toString();
+            if (c == '\\') {
+                char e = s.charAt(i++);
+                switch (e) {
+                    case 'n': b.append('\n'); break; case 't': b.append('\t'); break;
+                    case 'r': b.append('\r'); break; case 'b': b.append('\b'); break;
+                    case 'f': b.append('\f'); break;
+                    case 'u': b.append((char) Integer.parseInt(s.substring(i, i + 4), 16)); i += 4; break;
+                    default: b.append(e);
+                }
+            } else b.append(c);
+        }
+    }
+    @SuppressWarnings("unchecked")
+    static String str(Object o) {
+        if (o == null) return "null";
+        if (o instanceof String) return "\"" + ((String) o).replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"";
+        if (o instanceof Map) {
+            StringJoiner j = new StringJoiner(",", "{", "}");
+            for (Map.Entry<String, Object> e : ((Map<String, Object>) o).entrySet()) j.add(str(e.getKey()) + ":" + str(e.getValue()));
+            return j.toString();
+        }
+        if (o instanceof List) {
+            StringJoiner j = new StringJoiner(",", "[", "]");
+            for (Object x : (List<Object>) o) j.add(str(x));
+            return j.toString();
+        }
+        return o.toString();
+    }
+}
