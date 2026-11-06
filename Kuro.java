@@ -152,7 +152,7 @@ public class Kuro {
     }
 
     static class KPick extends JComponent {
-        String text = "Yükleniyor..."; final List<String> items = new ArrayList<>(); java.util.function.Consumer<String> on;
+        String text = "Yukleniyor..."; final List<String> items = new ArrayList<>(); java.util.function.Consumer<String> on;
         final Anim hov = new Anim(this::repaint);
         KPick() {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -388,7 +388,7 @@ public class Kuro {
             String ini = user.isEmpty() ? "?" : user.substring(0, 1).toUpperCase();
             FontMetrics fm = g.getFontMetrics(); g.drawString(ini, 20 + (40 - fm.stringWidth(ini)) / 2, h - 66 + (40 + fm.getAscent() - fm.getDescent()) / 2);
             g.setColor(FG); g.setFont(font(Font.BOLD, 14)); g.drawString(user, 70, h - 49);
-            g.setColor(MUTED); g.setFont(font(Font.PLAIN, 12)); g.drawString("Çıkış yap", 70, h - 32);
+            g.setColor(MUTED); g.setFont(font(Font.PLAIN, 12)); g.drawString("Cikis yap", 70, h - 32);
         }
     }
 
@@ -450,12 +450,12 @@ public class Kuro {
 
     void updateInfo() {
         SwingUtilities.invokeLater(() -> {
-            subtitle.setText("Hazır mısın, " + (account == null ? "" : account) + "?");
+            subtitle.setText("Hazir misin, " + (account == null ? "" : account) + "?");
             modInfo.setText(selVer + "  -  " + LOADERS[selLoader]);
         });
     }
 
-    // ---------- yenilenen modern giriş (login) ekranı ----------
+    // ---------- yenilenen modern giris (login) ekrani ----------
     JComponent buildLogin() {
         JPanel center = new JPanel(new GridBagLayout()); center.setOpaque(false);
         JPanel card = new JPanel() {
@@ -472,10 +472,10 @@ public class Kuro {
         card.setBorder(new EmptyBorder(32, 40, 32, 40));
         card.setPreferredSize(new Dimension(420, 520));
 
-        // Logo ve Hoş Geldin Başlığı
+        // Logo ve Hos Geldin Basligi
         JLabel logo = lbl("KURO", 42, true, ACC); logo.setAlignmentX(0.5f);
-        JLabel sub = lbl("Kuro Launcher'a Hoş Geldin", 14, true, FG); sub.setAlignmentX(0.5f);
-        JLabel desc = lbl("Oynamak için bir hesap seç veya yeni oluştur", 12, false, MUTED); desc.setAlignmentX(0.5f);
+        JLabel sub = lbl("Kuro Launcher'a Hos Geldin", 14, true, FG); sub.setAlignmentX(0.5f);
+        JLabel desc = lbl("Oynamak icin bir hesap sec veya yeni olustur", 12, false, MUTED); desc.setAlignmentX(0.5f);
         
         card.add(logo); 
         card.add(Box.createVerticalStrut(4));
@@ -484,19 +484,19 @@ public class Kuro {
         card.add(desc); 
         card.add(Box.createVerticalStrut(20));
 
-        // Kayıtlı Hesaplar listesi (Varsa scroll içinde düzgün görünür)
+        // Kayitli Hesaplar listesi
         JPanel accs = vbox(); accs.setAlignmentX(0.5f);
         List<String> savedAccs = accounts();
         if (!savedAccs.isEmpty()) {
             JPanel accWrap = new JPanel(); accWrap.setLayout(new BoxLayout(accWrap, BoxLayout.Y_AXIS)); accWrap.setOpaque(false);
             for (String n : savedAccs) {
-                KButton x = new KButton("✕", false, null); x.setPreferredSize(new Dimension(30, 30));
-                Row r = new Row(n, "Çevrimdışı Hesap", x);
+                KButton x = new KButton("X", false, null); x.setPreferredSize(new Dimension(30, 30));
+                Row r = new Row(n, "Cevrimdisi Hesap", x);
                 x.click = () -> { List<String> l = accounts(); l.remove(n); setAccounts(l); screen.show(buildLogin()); };
                 r.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 r.addMouseListener(new MouseAdapter() { 
                     public void mouseReleased(MouseEvent e) { 
-                        if (x.getBounds().contains(e.getPoint())) return; // silme tuşuna basıldıysa giriş yapmasın
+                        if (x.getBounds().contains(e.getPoint())) return;
                         if (r.contains(e.getPoint())) login(n); 
                     } 
                 });
@@ -509,8 +509,8 @@ public class Kuro {
             card.add(Box.createVerticalStrut(14));
         }
 
-        // Yeni hesap oluşturma alanı
-        KField name = fixed(new KField("Kullanıcı Adı (Örn: Steve)"), 340, 44);
+        // Yeni hesap olusturma alani
+        KField name = fixed(new KField("Kullanici Adi (Ornegin: Steve)"), 340, 44);
         JLabel err = lbl(" ", 12, false, RED); err.setAlignmentX(0.5f);
         Runnable go = () -> {
             String n = name.getText().trim();
@@ -519,8 +519,8 @@ public class Kuro {
         };
         name.addActionListener(e -> go.run());
         
-        KButton enter = fixed(new KButton("Hemen Başla", true, go), 340, 44);
-        KButton ms = fixed(new KButton("Microsoft ile Giriş (Çok Yakında)", false, null), 340, 44); ms.setEnabled(false);
+        KButton enter = fixed(new KButton("Hemen Basla", true, go), 340, 44);
+        KButton ms = fixed(new KButton("Microsoft ile Giris (Cok Yakinda)", false, null), 340, 44); ms.setEnabled(false);
         
         card.add(name); 
         card.add(Box.createVerticalStrut(4)); 
@@ -563,10 +563,10 @@ public class Kuro {
         JPanel p = pageBase();
         JPanel head = vbox();
         head.add(lbl("Oyna", 30, true, FG)); head.add(subtitle); head.add(Box.createVerticalStrut(22));
-        head.add(lbl("SÜRÜM", 11, true, MUTED)); head.add(Box.createVerticalStrut(6));
+        head.add(lbl("SURUM", 11, true, MUTED)); head.add(Box.createVerticalStrut(6));
         JPanel vr = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0)); vr.setOpaque(false); vr.setAlignmentX(0f);
         verPick.setPreferredSize(new Dimension(260, 44)); vr.add(verPick); head.add(vr); head.add(Box.createVerticalStrut(18));
-        head.add(lbl("MOD YÜKLEYİCİ (MOD LOADER)", 11, true, MUTED)); head.add(Box.createVerticalStrut(6));
+        head.add(lbl("MOD YUKLEYICI (MOD LOADER)", 11, true, MUTED)); head.add(Box.createVerticalStrut(6));
         JPanel sr = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0)); sr.setOpaque(false); sr.setAlignmentX(0f);
         loaderSeg.setPreferredSize(new Dimension(380, 44)); sr.add(loaderSeg); head.add(sr);
         p.add(head, BorderLayout.NORTH);
@@ -599,12 +599,12 @@ public class Kuro {
         KSlider sl = new KSlider(1, 16, ram); sl.setAlignmentX(0f); sl.setMaximumSize(new Dimension(420, 30));
         sl.on = v -> { cfg.put("ram", (long) v); saveCfg(); rl.setText("BELLEK (RAM): " + v + " GB"); };
         b.add(sl); b.add(Box.createVerticalStrut(22));
-        b.add(lbl("EK JVM ARGÜMANLARI", 11, true, MUTED)); b.add(Box.createVerticalStrut(8));
-        KField jvm = new KField("örnek: -XX:+UseG1GC"); jvm.setText(cs("jvm", "")); jvm.setAlignmentX(0f); jvm.setMaximumSize(new Dimension(520, 44));
+        b.add(lbl("EK JVM ARGUMANLARI", 11, true, MUTED)); b.add(Box.createVerticalStrut(8));
+        KField jvm = new KField("ornek: -XX:+UseG1GC"); jvm.setText(cs("jvm", "")); jvm.setAlignmentX(0f); jvm.setMaximumSize(new Dimension(520, 44));
         jvm.addKeyListener(new KeyAdapter() { public void keyReleased(KeyEvent e) { cfg.put("jvm", jvm.getText()); saveCfg(); } });
         b.add(jvm); b.add(Box.createVerticalStrut(26));
         JPanel br = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0)); br.setOpaque(false); br.setAlignmentX(0f);
-        KButton o1 = new KButton("Oyun Klasörünü Aç", false, () -> open(ROOT.resolve("instances"))); o1.setPreferredSize(new Dimension(190, 42));
+        KButton o1 = new KButton("Oyun Klasorunu Ac", false, () -> open(ROOT.resolve("instances"))); o1.setPreferredSize(new Dimension(190, 42));
         br.add(o1); b.add(br);
         p.add(b, BorderLayout.NORTH);
         return p;
@@ -621,13 +621,13 @@ public class Kuro {
         JPanel t = vbox(); t.add(lbl("Modlar", 30, true, FG)); t.add(modInfo); head.add(t, BorderLayout.CENTER);
         JPanel hb = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8)); hb.setOpaque(false);
         KButton add = new KButton("Dosya Ekle", false, this::addModFile); add.setPreferredSize(new Dimension(120, 40));
-        KButton of = new KButton("Klasörü Aç", false, () -> open(instDir().resolve("mods"))); of.setPreferredSize(new Dimension(120, 40));
+        KButton of = new KButton("Klasoru Ac", false, () -> open(instDir().resolve("mods"))); of.setPreferredSize(new Dimension(120, 40));
         hb.add(add); hb.add(of); head.add(hb, BorderLayout.EAST);
         p.add(head, BorderLayout.NORTH);
 
         JPanel cols = new JPanel(new GridLayout(1, 2, 18, 0)); cols.setOpaque(false);
         JPanel left = new JPanel(new BorderLayout(0, 10)); left.setOpaque(false);
-        left.add(lbl("YÜKLÜ MODLAR", 11, true, MUTED), BorderLayout.NORTH); left.add(listScroll(installedList), BorderLayout.CENTER);
+        left.add(lbl("YUKLU MODLAR", 11, true, MUTED), BorderLayout.NORTH); left.add(listScroll(installedList), BorderLayout.CENTER);
         JPanel right = new JPanel(new BorderLayout(0, 10)); right.setOpaque(false);
         JPanel sr = new JPanel(new BorderLayout(8, 0)); sr.setOpaque(false);
         KField q = new KField("Modrinth'te ara..."); KButton go = new KButton("Ara", true, null); go.setPreferredSize(new Dimension(80, 42));
@@ -642,7 +642,7 @@ public class Kuro {
     void refreshMods() {
         installedList.removeAll();
         if (selLoader == 0) {
-            installedList.add(new Row("Vanilla'da mod çalışmaz", "Fabric veya Quilt seç", new JComponent[0]));
+            installedList.add(new Row("Vanilla'da mod calismaz", "Fabric veya Quilt sec", new JComponent[0]));
         } else {
             Path dir = instDir().resolve("mods");
             try (var s = Files.exists(dir) ? Files.list(dir) : java.util.stream.Stream.<Path>empty()) {
@@ -651,17 +651,17 @@ public class Kuro {
                     String n = f.getFileName().toString();
                     boolean dis = n.endsWith(".disabled");
                     if (!n.endsWith(".jar") && !dis) continue;
-                    KButton tg = new KButton(dis ? "Aç" : "Kapat", false, null); tg.setPreferredSize(new Dimension(62, 34));
+                    KButton tg = new KButton(dis ? "Ac" : "Kapat", false, null); tg.setPreferredSize(new Dimension(62, 34));
                     KButton rm = new KButton("Sil", false, null); rm.setPreferredSize(new Dimension(50, 34));
                     tg.click = () -> { try { Files.move(f, f.resolveSibling(dis ? n.substring(0, n.length() - 9) : n + ".disabled")); } catch (Exception e) { } refreshMods(); };
                     rm.click = () -> { try { Files.deleteIfExists(f); } catch (Exception e) { } refreshMods(); };
                     String shown = dis ? n.substring(0, n.length() - 9) : n;
                     installedList.add(new Row(shown.length() > 30 ? shown.substring(0, 29) + "..." : shown,
-                            (Files.size(f) / 1024) + " KB" + (dis ? "  -  kapalı" : ""), tg, rm));
+                            (Files.size(f) / 1024) + " KB" + (dis ? "  -  kapali" : ""), tg, rm));
                     installedList.add(Box.createVerticalStrut(6));
                 }
             } catch (Exception e) { }
-            if (installedList.getComponentCount() == 0) installedList.add(new Row("Henüz mod yok", "Sağdan Modrinth'te ara", new JComponent[0]));
+            if (installedList.getComponentCount() == 0) installedList.add(new Row("Henuz mod yok", "Sagdan Modrinth'te ara", new JComponent[0]));
         }
         installedList.revalidate(); installedList.repaint();
     }
@@ -685,7 +685,7 @@ public class Kuro {
         resultList.removeAll(); resultList.add(new Row("Araniyor...", null, new JComponent[0])); resultList.revalidate(); resultList.repaint();
         new Thread(() -> {
             try {
-                String facets = "[["versions:" + selVer + ""],["categories:" + LOADERS[selLoader].toLowerCase() + ""],["project_type:mod"]]";
+                String facets = "[[\"versions:" + selVer + "\"],[\"categories:" + LOADERS[selLoader].toLowerCase() + "\"],[\"project_type:mod\"]]";
                 Map<String, Object> r = Json.obj(get("https://api.modrinth.com/v2/search?limit=20&query=" + enc(q) + "&facets=" + enc(facets)));
                 List<Object> hits = Json.arr(r.get("hits"));
                 SwingUtilities.invokeLater(() -> {
@@ -693,15 +693,15 @@ public class Kuro {
                     for (Object h : hits) {
                         Map<String, Object> m = Json.obj(h);
                         String title = String.valueOf(m.get("title")), desc = String.valueOf(m.get("description")), id = String.valueOf(m.get("project_id"));
-                        KButton ins = new KButton("Yükle", true, null); ins.setPreferredSize(new Dimension(74, 34));
+                        KButton ins = new KButton("Yukle", true, null); ins.setPreferredSize(new Dimension(74, 34));
                         ins.click = () -> installAsync(id, title, ins);
                         resultList.add(new Row(title, desc.length() > 44 ? desc.substring(0, 43) + "..." : desc, ins));
                         resultList.add(Box.createVerticalStrut(6));
                     }
-                    if (hits.isEmpty()) resultList.add(new Row("Sonuç yok", "Bu sürüm/yükleyici için mod bulunamadı", new JComponent[0]));
+                    if (hits.isEmpty()) resultList.add(new Row("Sonuc yok", "Bu surum/yukleyici icin mod bulunamadi", new JComponent[0]));
                     resultList.revalidate(); resultList.repaint();
                 });
-            } catch (Exception e) { log("Arama hatası: " + e); }
+            } catch (Exception e) { log("Arama hatasi: " + e); }
         }).start();
     }
 
@@ -713,7 +713,7 @@ public class Kuro {
                 installMod(id, dir, 0, new HashSet<>());
                 SwingUtilities.invokeLater(() -> { btn.text = "Tamam"; btn.repaint(); refreshMods(); });
             } catch (Exception e) {
-                log("Mod yüklenemedi (" + title + "): " + e);
+                log("Mod yuklenemedi (" + title + "): " + e);
                 SwingUtilities.invokeLater(() -> { btn.text = "Hata"; btn.repaint(); });
             }
         }).start();
@@ -721,10 +721,10 @@ public class Kuro {
 
     void installMod(String pid, Path dir, int depth, Set<String> seen) throws Exception {
         if (!seen.add(pid) || depth > 3) return;
-        String url = "https://api.modrinth.com/v2/project/" + pid + "/version?loaders=" + enc("["" + LOADERS[selLoader].toLowerCase() + ""]")
-                + "&game_versions=" + enc("["" + selVer + ""]");
+        String url = "https://api.modrinth.com/v2/project/" + pid + "/version?loaders=" + enc("[\"" + LOADERS[selLoader].toLowerCase() + "\"]")
+                + "&game_versions=" + enc("[\"" + selVer + "\"]");
         List<Object> vs = Json.arr(Json.parse(get(url)));
-        if (vs.isEmpty()) throw new Exception("uyumlu sürüm yok");
+        if (vs.isEmpty()) throw new Exception("uyumlu surum yok");
         Map<String, Object> v = Json.obj(vs.get(0));
         if (v.get("dependencies") != null)
             for (Object o : Json.arr(v.get("dependencies"))) {
@@ -735,13 +735,12 @@ public class Kuro {
         for (Object o : Json.arr(v.get("files"))) { Map<String, Object> f = Json.obj(o); if (file == null || Boolean.TRUE.equals(f.get("primary"))) file = f; }
         if (file == null) throw new Exception("dosya yok");
         download((String) file.get("url"), dir.resolve((String) file.get("filename")));
-        log("Yüklendi: " + file.get("filename"));
+        log("Yuklendi: " + file.get("filename"));
     }
 
     // ---------- helpers ----------
     void log(String s) {
-        SwingUtilities.invokeLater(() -> { log.append(s + "
-"); log.setCaretPosition(log.getDocument().getLength()); });
+        SwingUtilities.invokeLater(() -> { log.append(s + "\n"); log.setCaretPosition(log.getDocument().getLength()); });
     }
     void prog(int v, int max, String t) {
         SwingUtilities.invokeLater(() -> { progress.set(max == 0 ? 0 : v / (float) max); status.setText(t); });
@@ -767,237 +766,4 @@ public class Kuro {
             SwingUtilities.invokeLater(() -> {
                 verPick.items.clear();
                 verPick.items.addAll(versionUrls.keySet());
-                if (!versionUrls.containsKey(selVer) && !verPick.items.isEmpty()) { selVer = verPick.items.get(0); }
-                verPick.text = selVer; verPick.repaint(); updateInfo();
-            });
-        } catch (Exception e) { log("Sürüm listesi alınamadı: " + e); }
-    }
-
-    // ---------- launch ----------
-    void launch() {
-        SwingUtilities.invokeLater(() -> play.setEnabled(false));
-        try {
-            String mc = selVer;
-            if (mc == null || !versionUrls.containsKey(mc)) throw new Exception("Sürüm seçilmedi");
-            String name = account == null ? "Player" : account;
-            prog(0, 1, "Sürüm bilgisi indiriliyor...");
-            Map<String, Object> meta = Json.obj(get(versionUrls.get(mc)));
-            Path verDir = ROOT.resolve("versions").resolve(mc);
-            Files.createDirectories(verDir);
-
-            List<Map<String, Object>> libs = new ArrayList<>();
-            for (Object o : Json.arr(meta.get("libraries"))) libs.add(Json.obj(o));
-            String mainClass = (String) meta.get("mainClass");
-            List<String> jvmExtra = new ArrayList<>(), gameExtra = new ArrayList<>();
-            collectArgs(meta, jvmExtra, gameExtra);
-
-            if (selLoader > 0) {
-                String base = selLoader == 1 ? "https://meta.fabricmc.net/v2" : "https://meta.quiltmc.org/v3";
-                log(LOADERS[selLoader] + " profili indiriliyor...");
-                List<Object> loaders = Json.arr(Json.parse(get(base + "/versions/loader/" + mc)));
-                if (loaders.isEmpty()) throw new Exception("Bu sürüm için " + LOADERS[selLoader] + " yok");
-                Map<String, Object> pick = Json.obj(loaders.get(0));
-                for (Object o : loaders) { Map<String, Object> l = Json.obj(Json.obj(o).get("loader")); if (Boolean.TRUE.equals(l.get("stable"))) { pick = Json.obj(o); break; } }
-                String lv = (String) Json.obj(pick.get("loader")).get("version");
-                Map<String, Object> fp = Json.obj(get(base + "/versions/loader/" + mc + "/" + lv + "/profile/json"));
-                mainClass = (String) fp.get("mainClass");
-                for (Object o : Json.arr(fp.get("libraries"))) libs.add(0, Json.obj(o));
-                collectArgs(fp, jvmExtra, gameExtra);
-            }
-
-            List<Path> cp = new ArrayList<>();
-            List<String[]> jobs = new ArrayList<>();
-            for (Map<String, Object> lib : libs) {
-                if (!allowed(lib.get("rules"))) continue;
-                Map<String, Object> dl = lib.get("downloads") == null ? null : Json.obj(lib.get("downloads"));
-                String url, rel;
-                if (dl != null && dl.get("artifact") != null) {
-                    Map<String, Object> a = Json.obj(dl.get("artifact"));
-                    url = (String) a.get("url"); rel = (String) a.get("path");
-                } else if (lib.get("url") != null) {
-                    String[] c = ((String) lib.get("name")).split(":");
-                    rel = c[0].replace('.', '/') + "/" + c[1] + "/" + c[2] + "/" + c[1] + "-" + c[2] + ".jar";
-                    url = lib.get("url") + rel;
-                } else continue;
-                Path dst = ROOT.resolve("libraries").resolve(rel);
-                jobs.add(new String[]{url, dst.toString()});
-                cp.add(dst);
-            }
-            Map<String, Object> client = Json.obj(Json.obj(meta.get("downloads")).get("client"));
-            Path clientJar = verDir.resolve(mc + ".jar");
-            jobs.add(new String[]{(String) client.get("url"), clientJar.toString()});
-
-            Map<String, Object> ai = Json.obj(meta.get("assetIndex"));
-            String assetId = (String) ai.get("id");
-            Path idx = ROOT.resolve("assets/indexes").resolve(assetId + ".json");
-            download((String) ai.get("url"), idx);
-            Map<String, Object> objs = Json.obj(Json.obj(Json.parse(Files.readString(idx))).get("objects"));
-            for (Object o : objs.values()) {
-                String h = (String) Json.obj(o).get("hash");
-                jobs.add(new String[]{"https://resources.download.minecraft.net/" + h.substring(0, 2) + "/" + h,
-                        ROOT.resolve("assets/objects").resolve(h.substring(0, 2)).resolve(h).toString()});
-            }
-
-            log("İndiriliyor: " + jobs.size() + " dosya");
-            ExecutorService ex = Executors.newFixedThreadPool(16);
-            AtomicInteger done = new AtomicInteger();
-            List<Future<?>> fs = new ArrayList<>();
-            for (String[] j : jobs) fs.add(ex.submit(() -> {
-                try { download(j[0], Paths.get(j[1])); } catch (Exception e) { log("Hata: " + j[0]); }
-                int d = done.incrementAndGet();
-                if (d % 15 == 0 || d == jobs.size()) prog(d, jobs.size(), "İndiriliyor " + d + " / " + jobs.size());
-            }));
-            for (Future<?> f : fs) f.get();
-            ex.shutdown();
-
-            cp.add(clientJar);
-            StringBuilder cps = new StringBuilder();
-            for (Path p : new LinkedHashSet<>(cp)) cps.append(p).append(File.pathSeparator);
-            Path game = instDir(); Files.createDirectories(game.resolve("mods"));
-
-            Map<String, String> vars = new HashMap<>();
-            vars.put("auth_player_name", name); vars.put("version_name", mc);
-            vars.put("game_directory", game.toString()); vars.put("assets_root", ROOT.resolve("assets").toString());
-            vars.put("assets_index_name", assetId);
-            vars.put("auth_uuid", UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes()).toString().replace("-", ""));
-            vars.put("auth_access_token", "0"); vars.put("clientid", "0"); vars.put("auth_xuid", "0");
-            vars.put("user_type", "legacy"); vars.put("version_type", "Kuro");
-            vars.put("natives_directory", ROOT.resolve("natives").toString());
-            vars.put("launcher_name", "Kuro"); vars.put("launcher_version", "2.0");
-            vars.put("classpath", cps.toString());
-
-            List<String> cmd = new ArrayList<>();
-            cmd.add(Paths.get(System.getProperty("java.home"), "bin", "java").toString());
-            cmd.add("-Xmx" + ci("ram", 4) + "G");
-            for (String s : cs("jvm", "").trim().split("\s+")) if (!s.isEmpty()) cmd.add(s);
-            for (String s : jvmExtra) cmd.add(sub(s, vars));
-            if (!jvmExtra.contains("-cp")) { cmd.add("-cp"); cmd.add(cps.toString()); }
-            cmd.add(mainClass);
-            for (String s : gameExtra) cmd.add(sub(s, vars));
-
-            prog(1, 1, "Oyun çalışıyor");
-            log("Başlatılıyor: " + mc + " (" + LOADERS[selLoader] + ")");
-            Process pr = new ProcessBuilder(cmd).directory(game.toFile()).redirectErrorStream(true).start();
-            try (BufferedReader r = new BufferedReader(new InputStreamReader(pr.getInputStream()))) {
-                String l; while ((l = r.readLine()) != null) log(l);
-            }
-            log("Oyun kapandı (kod " + pr.waitFor() + ")");
-            prog(0, 1, "Hazır");
-        } catch (Exception e) {
-            log("HATA: " + e); prog(0, 1, "Hata oluştu, logu kontrol et");
-        } finally {
-            SwingUtilities.invokeLater(() -> play.setEnabled(true));
-        }
-    }
-
-    static String sub(String s, Map<String, String> v) {
-        for (Map.Entry<String, String> e : v.entrySet()) s = s.replace("${" + e.getKey() + "}", e.getValue());
-        return s;
-    }
-
-    void collectArgs(Map<String, Object> meta, List<String> jvm, List<String> game) {
-        if (meta.get("arguments") == null) return;
-        Map<String, Object> a = Json.obj(meta.get("arguments"));
-        for (String k : new String[]{"jvm", "game"}) {
-            List<String> out = k.equals("jvm") ? jvm : game;
-            if (a.get(k) == null) continue;
-            for (Object o : Json.arr(a.get(k))) {
-                if (o instanceof String) { out.add((String) o); continue; }
-                if (k.equals("game")) continue;
-                Map<String, Object> m = Json.obj(o);
-                if (!allowed(m.get("rules"))) continue;
-                Object v = m.get("value");
-                if (v instanceof String) out.add((String) v);
-                else for (Object x : Json.arr(v)) out.add((String) x);
-            }
-        }
-    }
-
-    static boolean allowed(Object rules) {
-        if (rules == null) return true;
-        String sys = System.getProperty("os.arch").toLowerCase();
-        boolean arm = sys.contains("aarch64") || sys.contains("arm"), x64 = sys.contains("amd64") || sys.contains("x86_64");
-        boolean ok = false;
-        for (Object o : Json.arr(rules)) {
-            Map<String, Object> r = Json.obj(o);
-            boolean match = r.get("features") == null;
-            if (r.get("os") != null) {
-                Map<String, Object> os = Json.obj(r.get("os"));
-                if (os.get("name") != null && !os.get("name").equals(OS)) match = false;
-                Object ar = os.get("arch");
-                if ("x86".equals(ar) && (x64 || arm)) match = false;
-                if ("arm64".equals(ar) && !arm) match = false;
-            }
-            if (match) ok = "allow".equals(r.get("action"));
-        }
-        return ok;
-    }
-}
-
-/** Tiny JSON parser/serializer (no external dependencies). */
-class Json {
-    final String s; int i;
-    Json(String s) { this.s = s; }
-    static Object parse(String s) { return new Json(s).val(); }
-    @SuppressWarnings("unchecked") static Map<String, Object> obj(Object o) { return o instanceof String ? (Map<String, Object>) parse((String) o) : (Map<String, Object>) o; }
-    @SuppressWarnings("unchecked") static List<Object> arr(Object o) { return (List<Object>) o; }
-
-    void ws() { while (i < s.length() && Character.isWhitespace(s.charAt(i))) i++; }
-    Object val() {
-        ws();
-        char c = s.charAt(i);
-        if (c == '{') {
-            Map<String, Object> m = new LinkedHashMap<>(); i++; ws();
-            if (s.charAt(i) == '}') { i++; return m; }
-            while (true) { ws(); String k = str(); ws(); i++; m.put(k, val()); ws(); if (s.charAt(i++) == '}') return m; }
-        }
-        if (c == '[') {
-            List<Object> l = new ArrayList<>(); i++; ws();
-            if (s.charAt(i) == ']') { i++; return l; }
-            while (true) { l.add(val()); ws(); if (s.charAt(i++) == ']') return l; }
-        }
-        if (c == '"') return str();
-        if (s.startsWith("true", i)) { i += 4; return true; }
-        if (s.startsWith("false", i)) { i += 5; return false; }
-        if (s.startsWith("null", i)) { i += 4; return null; }
-        int st = i;
-        while (i < s.length() && "+-0123456789.eE".indexOf(s.charAt(i)) >= 0) i++;
-        String n = s.substring(st, i);
-        return n.contains(".") || n.contains("e") || n.contains("E") ? (Object) Double.parseDouble(n) : (Object) Long.parseLong(n);
-    }
-    String str() {
-        StringBuilder b = new StringBuilder(); i++;
-        while (true) {
-            char c = s.charAt(i++);
-            if (c == '"') return b.toString();
-            if (c == '\') {
-                char e = s.charAt(i++);
-                switch (e) {
-                    case 'n': b.append('
-'); break; case 't': b.append('	'); break;
-                    case 'r': b.append(''); break; case 'b': b.append(''); break;
-                    case 'f': b.append(''); break;
-                    case 'u': b.append((char) Integer.parseInt(s.substring(i, i + 4), 16)); i += 4; break;
-                    default: b.append(e);
-                }
-            } else b.append(c);
-        }
-    }
-    @SuppressWarnings("unchecked")
-    static String str(Object o) {
-        if (o == null) return "null";
-        if (o instanceof String) return """ + ((String) o).replace("\", "\\").replace(""", "\"").replace("
-", "\n") + """;
-        if (o instanceof Map) {
-            StringJoiner j = new StringJoiner(",", "{", "}");
-            for (Map.Entry<String, Object> e : ((Map<String, Object>) o).entrySet()) j.add(str(e.getKey()) + ":" + str(e.getValue()));
-            return j.toString();
-        }
-        if (o instanceof List) {
-            StringJoiner j = new StringJoiner(",", "[", "]");
-            for (Object x : (List<Object>) o) j.add(str(x));
-            return j.toString();
-        }
-        return o.toString();
-    }
-}
+                if (!versionUrls.containsKey(selVer) && !
