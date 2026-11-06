@@ -857,7 +857,18 @@ public class Kuro {
             vars.put("classpath", cps.toString());
 
             List<String> cmd = new ArrayList<>();
-            cmd.add(Paths.get(System.getProperty("java.home"), "bin", "java").toString());
+            // Dinamik olarak sistemdeki veya jpackage runtime içindeki java yolunu bulur
+            String javaPath = System.getProperty("java.home");
+            Path jBin = javaPath != null ? Paths.get(javaPath, "bin", "java.exe") : null;
+            if (jBin == null || !Files.exists(jBin)) {
+                jBin = Paths.get(System.getProperty("java.home"), "bin", "java");
+            }
+            if (!Files.exists(jBin)) {
+                cmd.add("java"); // Sistem PATH'indeki java'yı dener
+            } else {
+                cmd.add(jBin.toString());
+            }
+
             cmd.add("-Xmx" + ci("ram", 4) + "G");
             for (String s : cs("jvm", "").trim().split("\\s+")) if (!s.isEmpty()) cmd.add(s);
             for (String s : jvmExtra) cmd.add(sub(s, vars));
